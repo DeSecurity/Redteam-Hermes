@@ -1,4 +1,4 @@
-# Steel Mountain (THM) — Walkthrough (Teaching Version)
+# Steel Mountain (THM) — Walkthrough
 
 Status: In Progress (initial access repeatedly confirmed; privesc to SYSTEM in progress)
 Target: 10.146.141.173
