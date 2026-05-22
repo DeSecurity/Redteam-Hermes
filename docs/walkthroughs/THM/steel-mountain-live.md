@@ -5,16 +5,6 @@ Target IP: 10.146.141.173
 Last Reset (UTC): 2026-05-22 22:05:22Z
 Scope: Authorized lab target (TryHackMe)
 
-## Operator Standard (what gets logged)
-Only material progress is recorded:
-- Confirmed attack surface and decision points
-- Successful/failed exploitation attempts with evidence
-- Shell/privilege milestones
-- Key obstacles and how they were solved
-- Flags, proof, and reproducible commands
-
-Noise (VPN hiccups, transient retries, tooling friction) is excluded unless it directly changes the attack path.
-
 ## Recon Baseline (useful findings only)
 Confirmed externally reachable services:
 - 80/tcp: Microsoft IIS 8.5
@@ -38,3 +28,10 @@ High-value lead:
 - Pruned low-value operational noise.
 - Preserved only actionable recon baseline and attack plan.
 - Continuing with exploitation-focused updates from this point onward.
+
+### 2026-05-22 22:07:28Z — Autonomous exploitation pass
+- Starting focused foothold attempt on Rejetto HFS 2.3 (8080).
+
+### 2026-05-22 22:07:51Z — Foothold not yet achieved
+- Current pass did not open a stable reverse session.
+- Next pass should rotate payload/port and retry.
