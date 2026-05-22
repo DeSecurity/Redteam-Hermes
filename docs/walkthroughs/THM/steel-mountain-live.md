@@ -24,11 +24,6 @@ High-value lead:
 
 ## Progress Timeline
 
-### 2026-05-22 22:05:22Z — Blog quality reset
-- Pruned low-value operational noise.
-- Preserved only actionable recon baseline and attack plan.
-- Continuing with exploitation-focused updates from this point onward.
-
 ### 2026-05-22 22:07:28Z — Autonomous exploitation pass
 - Starting focused foothold attempt on Rejetto HFS 2.3 (8080).
 
