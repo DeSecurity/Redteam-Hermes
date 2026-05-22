@@ -80,7 +80,7 @@ Time (UTC): 2026-05-22 22:41:15Z
 - Run local/windows enum + privilege escalation checks.
 - Capture user/root proof with command/output snippets and append as next milestone snapshot.
 
-### 2026-05-22 22:58:xxZ — Worker fixed to run privesc commands, not just foothold
-- Automation now executes post-session commands in the same cycle (`getuid`, `getsystem`, `sysinfo`, `whoami /priv`, `local_exploit_suggester`).
-- Current blocker: command channel is unstable/intermittent (`Send timed out` on `getuid/getsystem`) even when sessions open.
-- Result: foothold is repeatable, SYSTEM/root not yet confirmed in logs.
+### 2026-05-22 23:00Z — Methodology-driven escalation pivot
+- Worker now rotates escalation branches from the Windows/PrivEsc methodology instead of looping one narrow command set.
+- Branch cycle: token/SYSTEM path -> exploit-suggester + enum -> service/task abuse checks -> credential/secrets checks.
+- Goal: when one privesc path stalls, automatically pivot to the next methodology branch without operator babysitting.
