@@ -22,8 +22,8 @@
           - uses: actions/setup-python@v5
             with:
               python-version: '3.x'
-          - name: Install MkDocs
-            run: pip install mkdocs
+          - name: Install MkDocs stack
+            run: pip install mkdocs mkdocs-material
           - name: Build site
             run: mkdocs build
           - name: Upload artifact
