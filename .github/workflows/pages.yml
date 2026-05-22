@@ -42,12 +42,3 @@
           - name: Deploy to GitHub Pages
             id: deployment
             uses: actions/deploy-pages@v4
-
-
-    Then run:
-    bash
-    cd /home/kali/Redteam-Hermes
-    mkdir -p .github/workflows
-    cat > .github/workflows/pages.yml << 'EOF'
-    <PASTE_YAML_HERE>
-    EOF
