@@ -27,7 +27,6 @@ nav:
       - THM:
           - Index: walkthroughs/THM/index.md
           - Steel Mountain (Live): walkthroughs/THM/steel-mountain-live.md
-          - Steel Mountain (Example): walkthroughs/THM/steel-mountain-example.md
       - OffSec: walkthroughs/OffSec/index.md
       - VulnHub: walkthroughs/VulnHub/index.md
   - Methodology:

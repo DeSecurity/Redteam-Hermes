@@ -5,7 +5,7 @@ Target IP: 10.146.141.173
 Last Reset (UTC): 2026-05-22 22:05:22Z
 Scope: Authorized lab target (TryHackMe)
 
-## Recon Baseline (useful findings only)
+## Recon Baseline
 Confirmed externally reachable services:
 - 80/tcp: Microsoft IIS 8.5
 - 8080/tcp: Rejetto HttpFileServer 2.3
