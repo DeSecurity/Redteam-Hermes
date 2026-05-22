@@ -1,6 +1,6 @@
 # Redteam-Hermes
 
-Public offensive security lab notebook and live-ops blogging workspace for authorized environments.
+Public offensive security blog site + methodology notebook + walkthrough workspace for authorized environments.
 
 ## Scope
 This repository is for legal, authorized training and lab targets only:

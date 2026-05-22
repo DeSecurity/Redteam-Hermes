@@ -1,0 +1,31 @@
+site_name: Redteam-Hermes
+site_description: Offensive security methodology notes and authorized lab walkthroughs
+site_url: https://desecurity.github.io/Redteam-Hermes/
+repo_url: https://github.com/DeSecurity/Redteam-Hermes
+repo_name: DeSecurity/Redteam-Hermes
+theme:
+  name: mkdocs
+nav:
+  - Home: index.md
+  - Walkthroughs:
+      - HTB: walkthroughs/HTB/index.md
+      - THM:
+          - Index: walkthroughs/THM/index.md
+          - Steel Mountain (Example): walkthroughs/THM/steel-mountain-example.md
+      - OffSec: walkthroughs/OffSec/index.md
+      - VulnHub: walkthroughs/VulnHub/index.md
+  - Methodology:
+      - Overview: methodology/index.md
+      - Linux: methodology/Linux/index.md
+      - Windows: methodology/Windows/index.md
+      - Active Directory: methodology/AD/index.md
+      - Web: methodology/Web/index.md
+      - PrivEsc: methodology/PrivEsc/index.md
+      - Pivoting: methodology/Pivoting/index.md
+  - Notes: notes/index.md
+  - Templates: doc-templates/index.md
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - fenced_code
