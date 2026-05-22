@@ -7,8 +7,8 @@ Use this checklist before publishing any machine walkthrough.
 - [ ] Shows the narrowed service/version scan only after full-port results.
 - [ ] Includes web validation commands (`curl`/browser) for discovered web ports.
 - [ ] Explains exploit-selection reasoning (why this path, why now).
-- [ ] If Metasploit is used, includes `search`/`info` decision step.
-- [ ] If searchsploit is used, explains it as corroboration/fallback.
+- [ ] Uses exploit research order: searchsploit/manual PoC first, Metasploit second, then Google/GitHub PoC search if needed.
+- [ ] If Metasploit is used, documents why framework use was chosen over manual PoC for that step.
 
 ## Reproducibility
 - [ ] Includes exact commands and at least one real output snippet per milestone.
