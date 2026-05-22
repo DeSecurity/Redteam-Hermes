@@ -4,21 +4,7 @@ site_url: https://desecurity.github.io/Redteam-Hermes/
 repo_url: https://github.com/DeSecurity/Redteam-Hermes
 repo_name: DeSecurity/Redteam-Hermes
 theme:
-  name: material
-  language: en
-  features:
-    - navigation.tabs
-    - navigation.top
-    - content.code.copy
-    - search.highlight
-    - search.suggest
-  palette:
-    - scheme: slate
-      primary: black
-      accent: lime
-  font:
-    text: Roboto Mono
-    code: Roboto Mono
+  name: readthedocs
 extra_css:
   - stylesheets/extra.css
 nav:
