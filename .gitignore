@@ -1,0 +1,30 @@
+# Secrets
+*.pem
+*.key
+*.p12
+*.ovpn
+*.kdbx
+*.env
+.env*
+
+# Sessions/cookies/tokens
+cookies.txt
+*token*
+*session*
+
+# Tool artifacts
+*.pcap
+*.cap
+*.loot
+*.db-shm
+*.db-wal
+
+# Python
+__pycache__/
+*.pyc
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
