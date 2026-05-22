@@ -37,7 +37,9 @@ nav:
       - Web: methodology/Web/index.md
       - PrivEsc: methodology/PrivEsc/index.md
       - Pivoting: methodology/Pivoting/index.md
-  - Notes: notes/index.md
+  - Notes:
+      - Index: notes/index.md
+      - Walkthrough readability notes: notes/walkthrough-writing-notes.md
   - Templates: doc-templates/index.md
 markdown_extensions:
   - toc:
