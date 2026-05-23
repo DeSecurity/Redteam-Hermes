@@ -164,6 +164,24 @@ This walkthrough will be updated with:
 2) SYSTEM proof output,
 3) final administrator/root flag proof.
 
+### 2026-05-23T00:22:00Z — Autonomous troubleshooting cycle update
+- Failure observed first: target looked unreachable/filtered during baseline check (`65535 filtered` and `80/8080 filtered`).
+- Cause diagnosed from live network state:
+  - two VPN tunnel interfaces existed simultaneously (`tun0` + `tun1`) with overlapping THM route source.
+  - after forcing single active tunnel (`tun1 DOWN`), service reachability returned immediately.
+- Recon re-validation after pivot:
+  - `nmap -p80,8080` -> both `open` (SYN/ACK), target reachable again.
+- Exploit research order followed this cycle:
+  1. Searchsploit first (`39161.py` and related HFS 2.3 entries),
+  2. Metasploit second (`exploit/windows/http/rejetto_hfs_exec` verified).
+- Foothold retries and stability result:
+  - Attempt A (`windows/meterpreter_reverse_tcp`, LPORT 4447): two callbacks opened, commands timed out, sessions died/closed.
+  - Attempt B (`windows/shell/reverse_tcp`, LPORT 7777): shell callback opened but session interaction was unstable and not retained after framework exit.
+  - Net result: no durable live session persisted across validation step (`sessions -l` from fresh msfconsole returned none).
+- Evidence logs:
+  - `/home/kali/Redteam-Hermes/logs/steel_state/foothold_try1.log`
+  - `/home/kali/Redteam-Hermes/logs/steel_state/foothold_try2.log`
+
 ### 2026-05-23T00:07:21Z — Autonomous troubleshooting cycle update
 - Full-port baseline re-run completed (not just 80/8080):
   - Open TCP: `80,135,139,445,3389,5985,8080,47001,49152-49156,49188,49190`
