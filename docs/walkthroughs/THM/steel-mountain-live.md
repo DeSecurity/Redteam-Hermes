@@ -163,3 +163,21 @@ This walkthrough will be updated with:
 1) exact privesc path used,
 2) SYSTEM proof output,
 3) final administrator/root flag proof.
+
+### 2026-05-23T00:07:21Z — Autonomous troubleshooting cycle update
+- Full-port baseline re-run completed (not just 80/8080):
+  - Open TCP: `80,135,139,445,3389,5985,8080,47001,49152-49156,49188,49190`
+  - Evidence: `scans/steel-allports-latest.txt`
+- Targeted service enum refreshed:
+  - `80/tcp Microsoft-IIS/8.5`, `8080/tcp HFS 2.3`
+  - Evidence: `scans/steel-services-latest.txt`
+- Exploit research order followed and revalidated:
+  - Searchsploit first: HFS 2.3 entries include EDB `39161.py`
+- Foothold troubleshooting:
+  - Failure observed with staged meterpreter (`windows/meterpreter/reverse_tcp`) causing callback churn and repeated invalid/closed sessions.
+  - Pivot applied: switched to stageless `windows/meterpreter_reverse_tcp` on a new LPORT (`4445` then `4447`) to reduce session churn.
+  - Result: stable single live meterpreter session confirmed as `STEELMOUNTAIN\\bill`.
+  - Evidence: `logs/steel_state/stable_attempt.log`, `logs/steel_state/post_attempt.log`
+- PrivEsc status this cycle:
+  - `getsystem` attempted and failed (`All pipe instances are busy`), no SYSTEM token obtained.
+  - Root proof command not captured this cycle.
